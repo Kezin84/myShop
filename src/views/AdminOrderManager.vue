@@ -169,11 +169,13 @@ onMounted(() => {
           <p class="fw-bold text-danger">💰 Tổng tiền: {{ formatCurrency(order.total) }}</p>
           <p class="text-muted">🕒 Ngày: {{ order.date }}</p>
           <p><strong>📦 Trạng thái:</strong> {{ order.status || 'Đang xử lý' }}</p>
+      
+           <!-- ✅ CHỈ HIỂN THỊ KHI ĐƠN CHƯA XỬ LÝ HOẶC ĐANG XỬ LÝ -->
+<div v-if="!order.status || order.status === 'Đang xử lý'">
+  <button class="btn btn-sm btn-success me-2" @click.stop="updateStatus(order.id, 'Đã hoàn thành')">✅ Hoàn thành</button>
+  <button class="btn btn-sm btn-danger" @click.stop="updateStatus(order.id, 'Đã từ chối')">❌ Từ chối</button>
+</div>
 
-          <!-- ✅ THÊM NÚT HOÀN THÀNH / TỪ CHỐI -->
-          
-            <button class="btn btn-sm btn-success" @click.stop="updateStatus(order.id, 'Đã hoàn thành')">✅ Hoàn thành</button>
-            <button class="btn btn-sm btn-danger" @click.stop="updateStatus(order.id, 'Đã từ chối')">❌ Từ chối</button>
           
         </div>
       </div>

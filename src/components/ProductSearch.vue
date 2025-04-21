@@ -6,6 +6,7 @@
         class="form-control"
         type="text"
         placeholder="Tìm theo tên/mô tả sản phẩm..."
+        
       />
       <ul
   v-if="suggestions.length > 0"

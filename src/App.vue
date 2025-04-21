@@ -1,13 +1,12 @@
 <script setup>
 import { RouterView, RouterLink, useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 import ProductSearch from './components/ProductSearch.vue'
 import axios from 'axios'
+import { useUserStore } from '@/store/user'
 
+const userStore = useUserStore()
 const router = useRouter()
-const isLoggedIn = ref(false)
-const username = ref('')
-const role = ref('')
 const categories = ref([])
 const showDropdown = ref(false)
 const pendingCount = ref(0)
@@ -17,25 +16,19 @@ let previousCount = 0
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec'
 
 onMounted(async () => {
-  const saved = localStorage.getItem('user')
-  if (saved) {
-    const user = JSON.parse(saved)
-    username.value = user.username
-    role.value = user.role
-    isLoggedIn.value = true
+  userStore.loadFromLocalStorage()
 
-    if (user.role === 'client') {
-      try {
-        const check = new URLSearchParams({ action: 'getCustomerInfo', username: user.username })
-        const res = await fetch(`${SCRIPT_URL}?${check}`)
-        const data = await res.json()
-        if (!data.success || !data.diachi || !data.sdt) {
-          alert("⚠️ Bạn chưa cập nhật thông tin cá nhân. Vui lòng cập nhật trước khi sử dụng các chức năng khác.")
-          router.push('/profile')
-        }
-      } catch (err) {
-        console.error('Lỗi khi kiểm tra thông tin cá nhân:', err)
+  if (userStore.role === 'client') {
+    try {
+      const check = new URLSearchParams({ action: 'getCustomerInfo', username: userStore.username })
+      const res = await fetch(`${SCRIPT_URL}?${check}`)
+      const data = await res.json()
+      if (!data.success || !data.diachi || !data.sdt) {
+        alert("⚠️ Bạn chưa cập nhật thông tin cá nhân. Vui lòng cập nhật trước khi sử dụng các chức năng khác.")
+        router.push('/profile')
       }
+    } catch (err) {
+      console.error('Lỗi kiểm tra thông tin cá nhân:', err)
     }
   }
 
@@ -48,7 +41,7 @@ onMounted(async () => {
     console.error('Lỗi khi load danh mục:', e)
   }
 
-  if (role.value === 'admin') {
+  if (userStore.role === 'admin') {
     checkNewOrders()
     setInterval(checkNewOrders, 10000)
   }
@@ -71,10 +64,7 @@ const checkNewOrders = async () => {
 }
 
 const logout = () => {
-  localStorage.removeItem('user')
-  isLoggedIn.value = false
-  username.value = ''
-  role.value = ''
+  userStore.logout()
   router.push('/')
 }
 
@@ -104,21 +94,21 @@ const goToCategory = (cat) => {
           </ul>
         </div>
 
-        <template v-if="!isLoggedIn">
+        <template v-if="!userStore.isLoggedIn">
           <RouterLink to="/login" class="btn btn-outline-primary btn-sm">Đăng nhập</RouterLink>
           <RouterLink to="/register" class="btn btn-outline-secondary btn-sm">Đăng ký</RouterLink>
         </template>
 
-        <template v-else-if="role === 'client'">
+        <template v-else-if="userStore.role === 'client'">
           <RouterLink to="/cart" class="btn btn-outline-success btn-sm">Giỏ hàng</RouterLink>
           <RouterLink to="/checkout" class="btn btn-outline-warning btn-sm">Đặt hàng</RouterLink>
           <RouterLink to="/my-orders" class="btn btn-outline-info btn-sm">Đơn hàng của tôi</RouterLink>
           <RouterLink to="/profile" class="btn btn-outline-secondary btn-sm">👤 Thông tin cá nhân</RouterLink>
-          <span class="ms-2">👋 Xin chào, <strong>{{ username }}</strong></span>
+          <span class="ms-2">👋 Xin chào, <strong>{{ userStore.username }}</strong></span>
           <button class="btn btn-sm btn-danger ms-2" @click="logout">Đăng xuất</button>
         </template>
 
-        <template v-else-if="role === 'admin'">
+        <template v-else-if="userStore.role === 'admin'">
           <RouterLink to="/orders" class="btn btn-outline-secondary btn-sm">Tra cứu đơn</RouterLink>
           <div class="position-relative">
             <RouterLink to="/manage-orders" class="btn btn-outline-success btn-sm">Quản lý đơn hàng</RouterLink>
@@ -129,11 +119,13 @@ const goToCategory = (cat) => {
           <RouterLink to="/admin" class="btn btn-outline-dark btn-sm">Quản lý sản phẩm</RouterLink>
           <RouterLink to="/admin-users" class="btn btn-outline-dark btn-sm">👥 Quản lý người dùng</RouterLink>
           <RouterLink to="/admin-stats" class="btn btn-outline-dark">📊 Thống kê</RouterLink>
-          <span class="ms-2">👑 Xin chào Admin, <strong>{{ username }}</strong></span>
+          <span class="ms-2">👑 Xin chào Admin, <strong>{{ userStore.username }}</strong></span>
           <button class="btn btn-sm btn-danger ms-2" @click="logout">Đăng xuất</button>
+          
         </template>
       </nav>
     </div>
+    
   </header>
 
   <div v-if="showNotification" class="toast-custom">CÓ ĐƠN HÀNG MỚI</div>

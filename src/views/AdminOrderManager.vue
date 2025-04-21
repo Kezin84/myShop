@@ -25,35 +25,36 @@
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2 text-muted">Đang tải đơn hàng...</p>
-    </div>
+   <div class="col-md-6" v-for="(order, index) in sortedAndFilteredOrders" :key="index">
+  <div
+    class="border rounded p-3 shadow-sm bg-white h-100"
+    @click="selectOrder(order)"
+    style="cursor: pointer"
+    :class="{ 'border-success': selectedOrder?.id === order.id }"
+  >
+    <h6 class="fw-bold text-primary mb-2">
+      🆔 Mã đơn: <span class="text-decoration-underline">{{ order.id }}</span>
+    </h6>
+    <p><strong>👤 Người mua:</strong> {{ order.username }}</p>
+    <p><strong>📍 Địa chỉ:</strong> {{ order.address }}</p>
+    <p><strong>📞 SĐT:</strong> {{ order.phone }}</p>
+    <p><strong>🛍️ Sản phẩm:</strong> {{ order.products }}</p>
+    <p class="fw-bold text-danger">💰 Tổng tiền: {{ formatCurrency(order.total) }}</p>
+    <p class="text-muted">🕒 Ngày: {{ order.date }}</p>
+    <p><strong>📦 Trạng thái:</strong> {{ order.status || 'Đang xử lý' }}</p>
 
-    <div v-else-if="sortedAndFilteredOrders.length === 0">
-      <p class="text-muted">Không có đơn hàng phù hợp.</p>
+    <!-- ✅ Hiển thị 2 nút nếu đơn chưa có trạng thái -->
+    <div v-if="!order.status" class="d-flex gap-2 mt-2">
+      <button class="btn btn-sm btn-success" @click="updateStatus(order.id, 'Đã hoàn thành')">
+        ✅ Hoàn thành
+      </button>
+      <button class="btn btn-sm btn-danger" @click="updateStatus(order.id, 'Đã từ chối')">
+        ❌ Từ chối
+      </button>
     </div>
+  </div>
+</div>
 
-    <div class="row g-3" v-else>
-      <div class="col-md-6" v-for="(order, index) in sortedAndFilteredOrders" :key="index">
-        <div class="border rounded p-3 shadow-sm bg-white h-100" :class="{ 'border-success': selectedOrder?.id === order.id }">
-          <h6 class="fw-bold text-primary mb-2">🆔 Mã đơn: {{ order.id }}</h6>
-          <p><strong>👤 Người mua:</strong> {{ order.username }}</p>
-          <p><strong>📍 Địa chỉ:</strong> {{ order.address }}</p>
-          <p><strong>📞 SĐT:</strong> {{ order.phone }}</p>
-          <p><strong>🛍️ Sản phẩm:</strong> {{ order.products }}</p>
-          <p class="fw-bold text-danger">💰 Tổng tiền: {{ formatCurrency(order.total) }}</p>
-          <p class="text-muted">🕒 Ngày: {{ order.date }}</p>
-          <p><strong>📦 Trạng thái:</strong> {{ order.status || 'Đang xử lý' }}</p>
-
-          <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-sm btn-success" @click="updateStatus(order.id, 'Đã hoàn thành')">✅ Hoàn thành</button>
-            <button class="btn btn-sm btn-danger" @click="updateStatus(order.id, 'Đã từ chối')">❌ Từ chối</button>
-            <button class="btn btn-sm btn-outline-secondary ms-auto" @click="selectOrder(order)">✏️ Sửa</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Modal popup -->
     <div v-if="showModal" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex justify-content-center align-items-center">

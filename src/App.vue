@@ -79,12 +79,12 @@ const goToCategory = (cat) => {
     <div class="container d-flex justify-content-between align-items-center flex-wrap">
       <RouterLink to="/" class="text-decoration-none mb-2">
         <h4 class="fw-bold text-primary m-0">🔐 TechShop</h4>
-        <ProductSearch />
+      
       </RouterLink>
 
       <nav class="d-flex flex-wrap gap-2 align-items-center position-relative">
         <RouterLink to="/about" class="btn btn-outline-info btn-sm">Giới thiệu</RouterLink>
-
+        <ProductSearch />
         <div class="dropdown" @mouseenter="showDropdown = true" @mouseleave="showDropdown = false">
           <button class="btn btn-primary btn-sm dropdown-toggle">Sản phẩm</button>
           <ul v-if="showDropdown" class="dropdown-menu show">

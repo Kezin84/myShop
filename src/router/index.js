@@ -14,7 +14,10 @@ import ManageUsers from '../components/ManageUsers.vue'
 const routes = [
   {path:'/about',component:()=>import('@/views/AboutView.vue')},
   { path: '/', component: ProductList },
-  { path: '/product/:id', component: ProductDetail },
+  {
+    path: '/product/:id',
+    component: () => import('@/views/ProductDetail.vue')
+  },
   { path: '/cart', component: Cart },
   { path: '/checkout', component: Checkout },
   { path: '/orders', component: Orders },

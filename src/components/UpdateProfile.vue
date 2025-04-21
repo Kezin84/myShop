@@ -26,12 +26,19 @@
       <button type="submit" class="btn btn-primary">Cập nhật</button>
     </form>
 
-    <div v-if="message" class="alert alert-success mt-3">{{ message }}</div>
+    <div v-if="message" class="alert mt-3" :class="{
+      'alert-success': isSuccess,
+      'alert-danger': !isSuccess
+    }">
+      {{ message }}
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec'
 
 const form = ref({
   username: '',
@@ -41,46 +48,53 @@ const form = ref({
   diachi: ''
 })
 const message = ref('')
+const isSuccess = ref(false)
 
 onMounted(async () => {
   const savedUser = JSON.parse(localStorage.getItem('user'))
   if (savedUser) {
     form.value.username = savedUser.username
 
-    // Gọi API để load thông tin KH nếu đã có
     const params = new URLSearchParams({
       action: 'getCustomerInfo',
       username: form.value.username
     })
 
-    const res = await fetch(`https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec?${params}`)
+    const res = await fetch(`${SCRIPT_URL}?${params}`)
     const data = await res.json()
     if (data.success) {
-      form.value.hoten = data.hoten
-      form.value.email = data.email
-      form.value.sdt = data.sdt
-      form.value.diachi = data.diachi
+      form.value.hoten = data.hoten || ''
+      form.value.email = data.email || ''
+      form.value.sdt = data.sdt || ''
+      form.value.diachi = data.diachi || ''
     }
   }
 })
 
 const submitForm = async () => {
+  if (!form.value.sdt.trim() || !form.value.diachi.trim()) {
+    message.value = '⚠️ Vui lòng nhập đầy đủ Số điện thoại và Địa chỉ.'
+    isSuccess.value = false
+    return
+  }
+
   const body = new URLSearchParams({
     action: 'updateCustomerInfo',
     ...form.value
   })
 
-  const res = await fetch('https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec', {
+  const res = await fetch(SCRIPT_URL, {
     method: 'POST',
     body
   })
 
   const data = await res.json()
   if (data.success) {
-    message.value = 'Cập nhật thành công!'
+    message.value = '✅ Cập nhật thành công!'
+    isSuccess.value = true
   } else {
-    message.value = 'Có lỗi xảy ra, vui lòng thử lại.'
+    message.value = '❌ Có lỗi xảy ra, vui lòng thử lại.'
+    isSuccess.value = false
   }
 }
-
 </script>

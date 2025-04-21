@@ -53,8 +53,8 @@ const username = user.username || ''
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec'
 
 onMounted(async () => {
-  // Lấy giỏ hàng từ localStorage
-  const stored = localStorage.getItem('cart')
+  const cartKey = `cart_${username}`
+  const stored = localStorage.getItem(cartKey)
   if (stored) {
     cart.value = JSON.parse(stored)
   }
@@ -79,6 +79,7 @@ onMounted(async () => {
     }
   }
 })
+
 
 const total = computed(() =>
   cart.value.reduce((sum, item) => sum + item['GIÁ'] * item.quantity, 0)

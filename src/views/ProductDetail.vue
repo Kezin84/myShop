@@ -58,27 +58,40 @@
   </template>
   
   <script setup>
-  import { ref, onMounted, watch , computed } from 'vue'
-  import { useRoute } from 'vue-router'
-  import axios from 'axios'
-  
-  const route = useRoute()
-  const product = ref(null)
-  const quantity = ref(1)
-  
-  const increaseQty = () => {
-    if (quantity.value < product.value['SỐ LƯỢNG']) {
-      quantity.value++
-    }
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+
+const route = useRoute()
+const router = useRouter()
+
+const product = ref(null)
+const quantity = ref(1)
+
+const user = JSON.parse(localStorage.getItem('user')) || {}
+const username = user.username || ''
+
+const increaseQty = () => {
+  if (quantity.value < product.value['SỐ LƯỢNG']) {
+    quantity.value++
   }
-  
-  const decreaseQty = () => {
-    if (quantity.value > 1) {
-      quantity.value--
-    }
+}
+
+const decreaseQty = () => {
+  if (quantity.value > 1) {
+    quantity.value--
   }
-  
-  const addToCart = () => {
+}
+
+const addToCart = () => {
+  if (!username) {
+    alert('Bạn cần đăng nhập để thêm vào giỏ hàng!')
+    return router.push('/login')
+  }
+
+  const cartKey = `cart_${username}`
+  let cart = JSON.parse(localStorage.getItem(cartKey)) || []
+
   const newItem = {
     ID: product.value['ID'],
     'TÊN SẢN PHẨM': product.value['TÊN SẢN PHẨM'],
@@ -87,26 +100,21 @@
     quantity: quantity.value
   }
 
-  let cart = JSON.parse(localStorage.getItem('cart')) || []
-
   const existingIndex = cart.findIndex(item => item.ID === newItem.ID)
-
   if (existingIndex !== -1) {
     cart[existingIndex].quantity += quantity.value
   } else {
     cart.push(newItem)
   }
 
-  localStorage.setItem('cart', JSON.stringify(cart))
-  alert(`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng!`)
+  localStorage.setItem(cartKey, JSON.stringify(cart))
+  alert('✅ Đã thêm vào giỏ hàng!')
+  router.push('/cart')
 }
-
 
 onMounted(async () => {
   const id = route.params.id
-  const res = await axios.get(
-    `https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec?action=getProductById&id=${id}`
-  )
+  const res = await axios.get(`https://script.google.com/macros/s/AKfycbx9PtKQU7BwVz6jD3I4j-SjBJP7zQWJi-ORmex0YAxsdYB6ZeMrZPdtvhnfjeflfy7GRw/exec?action=getProductById&id=${id}`)
   product.value = res.data
 })
 
@@ -121,5 +129,7 @@ watch(quantity, (newVal) => {
 })
 
 const maxQty = computed(() => product.value?.['SỐ LƯỢNG'] || 1)
-  </script>
+</script>
+
+
   

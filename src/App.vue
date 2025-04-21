@@ -20,18 +20,30 @@ onMounted(async () => {
 
   if (userStore.role === 'client') {
     try {
-      const check = new URLSearchParams({ action: 'getCustomerInfo', username: userStore.username })
+      const check = new URLSearchParams({
+        action: 'getCustomerInfo',
+        username: userStore.username
+      })
+
       const res = await fetch(`${SCRIPT_URL}?${check}`)
       const data = await res.json()
-      if (!data.success || !data.diachi || !data.sdt) {
-        alert("⚠️ Bạn chưa cập nhật thông tin cá nhân. Vui lòng cập nhật trước khi sử dụng các chức năng khác.")
+
+      // ❗ Lưu vào localStorage cờ 'missingInfo' để router khác có thể dùng lại
+      const isMissing = !data.success || !data.diachi || !data.sdt
+      if (isMissing) {
+        localStorage.setItem('missingInfo', 'true')
+        alert("⚠️ Bạn chưa cập nhật thông tin cá nhân. Vui lòng cập nhật ngay.")
         router.push('/profile')
+        return
+      } else {
+        localStorage.removeItem('missingInfo')
       }
     } catch (err) {
       console.error('Lỗi kiểm tra thông tin cá nhân:', err)
     }
   }
 
+  // Load danh mục sản phẩm
   try {
     const res = await axios.get(`${SCRIPT_URL}?action=getProducts`)
     const data = res.data
@@ -41,11 +53,13 @@ onMounted(async () => {
     console.error('Lỗi khi load danh mục:', e)
   }
 
+  // Kiểm tra đơn mới cho admin
   if (userStore.role === 'admin') {
     checkNewOrders()
     setInterval(checkNewOrders, 10000)
   }
 })
+
 
 const checkNewOrders = async () => {
   try {

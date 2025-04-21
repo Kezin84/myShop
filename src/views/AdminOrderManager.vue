@@ -171,10 +171,10 @@ onMounted(() => {
           <p><strong>📦 Trạng thái:</strong> {{ order.status || 'Đang xử lý' }}</p>
 
           <!-- ✅ THÊM NÚT HOÀN THÀNH / TỪ CHỐI -->
-          <div v-if="!order.status || order.status === 'Đang xử lý'" class="d-flex gap-2 mt-2">
+          
             <button class="btn btn-sm btn-success" @click.stop="updateStatus(order.id, 'Đã hoàn thành')">✅ Hoàn thành</button>
             <button class="btn btn-sm btn-danger" @click.stop="updateStatus(order.id, 'Đã từ chối')">❌ Từ chối</button>
-          </div>
+          
         </div>
       </div>
     </div>
